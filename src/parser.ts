@@ -421,23 +421,7 @@ class Parser {
       }
 
       const defaultProps = possibleDefaultProps[0];
-      let initializer = (defaultProps as ts.PropertyDeclaration).initializer;
-      let properties = (initializer as ts.ObjectLiteralExpression).properties;
-
-      while (ts.isIdentifier(initializer as ts.Identifier)) {
-        const defaultPropsReference = this.checker.getSymbolAtLocation(
-          initializer as ts.Node
-        );
-        if (defaultPropsReference) {
-          const declarations = defaultPropsReference.getDeclarations();
-
-          if (declarations) {
-            initializer = (declarations[0] as ts.VariableDeclaration)
-              .initializer;
-            properties = (initializer as ts.ObjectLiteralExpression).properties;
-          }
-        }
-      }
+      const properties = this.followIdentifier(defaultProps.name);
 
       const propMap = getPropMap(properties as ts.NodeArray<
         ts.PropertyAssignment
@@ -449,7 +433,7 @@ class Parser {
       (statement as ts.ExpressionStatement).getChildren().forEach(child => {
         const { right } = child as ts.BinaryExpression;
         if (right) {
-          const { properties } = right as ts.ObjectLiteralExpression;
+          const properties = this.followIdentifier(right);
           propMap = getPropMap(properties as ts.NodeArray<
             ts.PropertyAssignment
           >);
@@ -458,6 +442,27 @@ class Parser {
       return propMap;
     }
     return {};
+  }
+
+  public followIdentifier(identifier: any) {
+    let initializer = identifier;
+    let properties = (initializer as ts.ObjectLiteralExpression).properties;
+
+    while (ts.isIdentifier(initializer as ts.Identifier)) {
+      const defaultPropsReference = this.checker.getSymbolAtLocation(
+        initializer as ts.Node
+      );
+      if (defaultPropsReference) {
+        const declarations = defaultPropsReference.getDeclarations();
+
+        if (declarations) {
+          initializer = (declarations[0] as ts.VariableDeclaration).initializer;
+          properties = (initializer as ts.ObjectLiteralExpression).properties;
+        }
+      }
+    }
+
+    return properties;
   }
 }
 
