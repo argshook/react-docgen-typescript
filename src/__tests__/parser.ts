@@ -269,6 +269,25 @@ describe('parser', () => {
     });
   });
 
+  it('should parse react stateless component with referenced default props', () => {
+    check('StatelessWithReferencedDefaultProps', {
+      StatelessWithReferencedDefaultProps: {
+        sampleJSDoc: {
+          defaultValue: 'sampleJSDoc default value',
+          description: 'sampleJSDoc description',
+          required: false,
+          type: 'string'
+        },
+        sampleProp: {
+          defaultValue: 'sampleProp default value',
+          description: 'sampleProp description',
+          required: false,
+          type: 'string'
+        }
+      }
+    });
+  });
+
   it('should parse functional component component defined as function', () => {
     check('FunctionDeclaration', {
       Jumbotron: {
